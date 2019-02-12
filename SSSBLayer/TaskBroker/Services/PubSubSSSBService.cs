@@ -1,13 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Coordinator.Database;
+using Coordinator.SSSB.Utils;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Shared.Errors;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
-using Coordinator.Database;
-using Coordinator.SSSB;
-using Coordinator.SSSB.Utils;
 
 namespace TaskBroker.SSSB.Services
 {
@@ -55,19 +54,26 @@ namespace TaskBroker.SSSB.Services
 
         protected virtual async Task OnStarted(string QueueName)
         {
-            var connectionManager = _services.GetRequiredService<IConnectionManager>();
-
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.RequiresNew, TransactionScopeAsyncFlowOption.Enabled))
-            using (var dbconnection = await connectionManager.CreateSSSBConnectionAsync(_stopSource.Token))
+            try
             {
-                foreach(string topic in _topics)
-                {
-                    await _pubSubHelper.Subscribe(dbconnection, TimeSpan.FromDays(365 * 10), _conversationGroup, topic);
-                }
-                transactionScope.Complete();
-            }
+                var connectionManager = _services.GetRequiredService<IConnectionManager>();
 
-            this._heartBeatTimer.Start();
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.RequiresNew, TransactionScopeAsyncFlowOption.Enabled))
+                using (var dbconnection = await connectionManager.CreateSSSBConnectionAsync(_stopSource.Token))
+                {
+                    foreach (string topic in _topics)
+                    {
+                        await _pubSubHelper.Subscribe(dbconnection, TimeSpan.FromDays(365 * 10), _conversationGroup, topic);
+                    }
+                    transactionScope.Complete();
+                }
+
+                this._heartBeatTimer.Start();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "PubSubService start error");
+            }
         }
 
         protected virtual async Task OnStopped(string QueueName)

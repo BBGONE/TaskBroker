@@ -30,11 +30,17 @@ namespace Coordinator.SSSB.Utils
         /// <summary>
         /// Стандартная обработка сообщения об ошибке
         /// </summary>
-        /// <param name="receivedMessage"></param>
-        public async Task ErrorMessageHandler(SqlConnection dbconnection, SSSBMessage receivedMessage)
+        /// <param name="message"></param>
+        public async Task ErrorMessageHandler(SqlConnection dbconnection, SSSBMessage message)
         {
-            await _serviceBrokerHelper.EndConversation(dbconnection, receivedMessage.ConversationHandle);
-            _logger.LogError(string.Format(ServiceBrokerResources.ErrorMessageReceivedErrMsg, receivedMessage.ConversationHandle, Encoding.Unicode.GetString(receivedMessage.Body)));
+            try
+            {
+                _logger.LogError($"ErrorMessageHandler: {message.ConversationHandle} {message.MessageType} {message.ServiceName} {message.GetMessageXML()}");
+            }
+            finally
+            {
+                await _serviceBrokerHelper.EndConversation(dbconnection, message.ConversationHandle);
+            }
         }
 
         /// <summary>

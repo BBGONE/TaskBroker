@@ -1,13 +1,3 @@
-DECLARE @is_broker_enabled BIT
-SELECT @is_broker_enabled = is_broker_enabled 
-FROM sys.databases 
-WHERE name = 'rebus2_test' 
-
-IF (@is_broker_enabled != 1)
-ALTER DATABASE rebus2_test
-SET ENABLE_BROKER 
-WITH ROLLBACK IMMEDIATE 
-GO 
 CREATE MESSAGE TYPE PPS_SubscribeMessageType
 AUTHORIZATION dbo
 VALIDATION = NONE 
@@ -66,14 +56,38 @@ CREATE TABLE PPS.Subscription (
 	CONSTRAINT PK_Subscription PRIMARY KEY NONCLUSTERED ([SubscriptionID]),
 	CONSTRAINT UK_Subscription UNIQUE CLUSTERED ([SubscriberID], [Topic]));
 GO
+CREATE TABLE [PPS].[SubscriptionError](
+	[SubscriptionErrorID] [int] IDENTITY(1,1) NOT NULL,
+	[ConversationHandle] [uniqueidentifier] NULL,
+	[Error] [nvarchar](4000) NULL,
+	[CreateDate] [datetime] NOT NULL DEFAULT (getdate()),
+ CONSTRAINT [PK_SubscriptionError] PRIMARY KEY NONCLUSTERED 
+(
+	[SubscriptionErrorID] ASC
+)
+)
+GO
 ALTER TABLE PPS.Subscription WITH CHECK ADD  CONSTRAINT [FK_Subscription_Subscriber] FOREIGN KEY([SubscriberID])
 REFERENCES PPS.Subscriber ([SubscriberID])
 ON DELETE CASCADE
 GO
 CREATE NONCLUSTERED INDEX IX_Subscription_Topic ON PPS.Subscription ([Topic]);
 GO
-
-CREATE PROCEDURE PPS.sp_PublisherHandler
+SET ARITHABORT ON;
+GO
+SET CONCAT_NULL_YIELDS_NULL ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+SET ANSI_NULLS ON;
+GO
+SET ANSI_PADDING ON;
+GO
+SET ANSI_WARNINGS ON;
+GO
+SET NUMERIC_ROUNDABORT OFF;
+GO
+CREATE PROCEDURE [PPS].[sp_PublisherHandler]
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -172,6 +186,9 @@ BEGIN
      bns="http://schemas.microsoft.com/SQL/ServiceBroker/Error";
      (/bns:Error/bns:Description)[1]', 'nvarchar(3000)'));
 
+	        INSERT INTO [PPS].[SubscriptionError]([ConversationHandle],[Error])
+            VALUES(@ch,  @ErrorMessage);
+
 		    UPDATE PPS.Subscriber 
 			SET [LastError]= @ErrorMessage
             WHERE [ConversationHandle] = @ch;
@@ -199,6 +216,10 @@ BEGIN
 			END CONVERSATION @ch WITH ERROR = @ErrorNumber DESCRIPTION = @ErrorMessage;
 			COMMIT TRANSACTION;
 		END;
+
+		INSERT INTO [PPS].[SubscriptionError]([ConversationHandle],[Error])
+        VALUES(@ch,  @ErrorMessage);
+           
 
 		IF (@SubscriberID IS NOT NULL)
 		BEGIN
