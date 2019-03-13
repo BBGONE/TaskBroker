@@ -3,9 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TaskBroker.Services;
+using TaskBroker.SSSB.Core;
+using TaskBroker.SSSB.EF;
 using TaskBroker.SSSB.Services;
-using Coordinator.SSSB;
-using Coordinator.SSSB.EF;
 
 namespace TaskBroker.SSSB
 {
@@ -22,6 +22,7 @@ namespace TaskBroker.SSSB
             services.AddSSSBService();
             services.TryAddSingleton<OnDemandTaskSSSBService>();
             services.TryAddTransient<OnDemandTaskManager>();
+            services.TryAddTransient<ISettingsService, SettingsService>();
             services.AddHostedService<OnDemandTaskService>();
         }
     }

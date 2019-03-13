@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using TaskBroker.SSSB.EF;
+using Microsoft.EntityFrameworkCore;
 using Shared.Database;
 using System;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Coordinator.SSSB.EF;
+using TaskBroker.SSSB.Core;
 
 namespace TaskBroker.SSSB.Utils
 {

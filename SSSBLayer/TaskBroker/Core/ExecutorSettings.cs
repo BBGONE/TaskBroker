@@ -2,7 +2,7 @@
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.Core
 {
     public class ExecutorSettings
     {

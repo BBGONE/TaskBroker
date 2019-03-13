@@ -3,12 +3,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
-using TaskBroker.SSSB;
+using TaskBroker.SSSB.Core;
+using TaskBroker.SSSB.EF;
 using TaskBroker.SSSB.Scheduler;
 using TaskBroker.SSSB.Services;
-using Coordinator.SSSB;
-using Coordinator.SSSB.EF;
-using Coordinator.SSSB.Utils;
+using TaskBroker.SSSB.Utils;
 
 namespace TaskBroker.Services
 {
@@ -36,6 +35,7 @@ namespace TaskBroker.Services
                 return ActivatorUtilities.CreateInstance<HeartBeatTimer>(sp, new object[] { conversationGroup });
             });
             services.TryAddTransient<OnDemandTaskManager>();
+            services.TryAddTransient<ISettingsService, SettingsService>();
             services.AddHostedService<PubSubService>();
         }
     }

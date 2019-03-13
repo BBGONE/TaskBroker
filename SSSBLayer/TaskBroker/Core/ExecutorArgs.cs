@@ -1,6 +1,4 @@
-﻿using Coordinator.SSSB;
-
-namespace TaskBroker.SSSB
+﻿namespace TaskBroker.SSSB.Core
 {
     public class ExecutorArgs
     {

@@ -4,10 +4,10 @@ using Shared.Errors;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using TaskBroker.SSSB.Core;
 using TaskBroker.SSSB.Scheduler;
-using Coordinator.SSSB;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.MessageHandlers
 {
     public class TaskEndedMessageHandler : BaseMessageHandler<ServiceMessageEventArgs>
     {

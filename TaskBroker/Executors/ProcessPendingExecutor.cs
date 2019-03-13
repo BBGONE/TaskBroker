@@ -1,11 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Coordinator.Database;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
-using Coordinator.Database;
-using Coordinator.SSSB;
-using Coordinator.SSSB.Utils;
+using TaskBroker.SSSB.Core;
+using TaskBroker.SSSB.Results;
+using TaskBroker.SSSB.Utils;
 
 namespace TaskBroker.SSSB.Executors
 {

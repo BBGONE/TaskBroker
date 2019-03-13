@@ -4,9 +4,9 @@ using Shared.Errors;
 using System;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Coordinator.SSSB;
+using TaskBroker.SSSB.Core;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.MessageHandlers
 {
     public class DeferedMessageHandler: TaskMessageHandler
     {
@@ -32,8 +32,8 @@ namespace TaskBroker.SSSB
                 byte[] originalMessageBody = Convert.FromBase64String(envelopeXml.Element("body").Value);
                 XElement originalMessageXml = originalMessageBody.GetMessageXML();
                 messageAtributes = originalMessageXml.GetMessageAttributes();
-                messageAtributes.isDefered = true;
-                messageAtributes.attemptNumber = (int)envelopeXml.Attribute("attemptNumber");
+                messageAtributes.IsDefered = true;
+                messageAtributes.AttemptNumber = (int)envelopeXml.Attribute("attemptNumber");
                 string messageType = (string)envelopeXml.Attribute("messageType");
                 string serviceName = (string)envelopeXml.Attribute("serviceName");
                 string contractName = (string)envelopeXml.Attribute("contractName");
@@ -42,10 +42,12 @@ namespace TaskBroker.SSSB
                 Guid conversationHandle = Guid.Parse(envelopeXml.Attribute("conversationHandle").Value);
                 Guid conversationGroupID = Guid.Parse(envelopeXml.Attribute("conversationGroupID").Value);
 
-                originalMessage = new SSSBMessage(conversationHandle, conversationGroupID, validationType, contractName);
-                originalMessage.SequenceNumber = sequenceNumber;
-                originalMessage.ServiceName = serviceName;
-                originalMessage.Body = originalMessageBody;
+                originalMessage = new SSSBMessage(conversationHandle, conversationGroupID, validationType, contractName)
+                {
+                    SequenceNumber = sequenceNumber,
+                    ServiceName = serviceName,
+                    Body = originalMessageBody
+                };
             }
             catch (OperationCanceledException)
             {

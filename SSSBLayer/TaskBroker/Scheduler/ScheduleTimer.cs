@@ -10,8 +10,8 @@ namespace TaskBroker.SSSB.Scheduler
 {
     public class ScheduleTimer : BaseSheduleTimer
     {
-        private Timer _timer;
-        private double _interval;
+        private readonly Timer _timer;
+        private readonly double _interval;
         private bool _isFirstTime;
         private readonly Stopwatch _swatch;
         private readonly ILogger<ScheduleTimer> _logger;

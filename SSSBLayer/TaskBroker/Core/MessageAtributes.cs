@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.Xml.Linq;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.Core
 {
     public class MessageAtributes
     {
@@ -10,8 +10,8 @@ namespace TaskBroker.SSSB
         public bool IsMultiStepTask { get; set; }
         public DateTime EventDate { get; set; }
         public NameValueCollection Parameters { get; set; }
-        public bool isDefered { get; set; }
-        public int attemptNumber { get; set; }
+        public bool IsDefered { get; set; }
+        public int AttemptNumber { get; set; }
     }
 
     public static class MessageAtributesHelper

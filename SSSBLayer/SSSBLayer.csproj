@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Coordinator\ServiceBrokerResources.Designer.cs">
+    <Compile Update="TaskBroker\ServiceBrokerResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>ServiceBrokerResources.resx</DependentUpon>
@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Coordinator\ServiceBrokerResources.resx">
-      <CustomToolNamespace>Coordinator.SSSB</CustomToolNamespace>
+    <EmbeddedResource Update="TaskBroker\ServiceBrokerResources.resx">
+      <CustomToolNamespace>TaskBroker.SSSB</CustomToolNamespace>
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ServiceBrokerResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>

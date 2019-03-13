@@ -3,6 +3,8 @@ using Shared.Errors;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using TaskBroker.SSSB.Core;
+using TaskBroker.SSSB.MessageHandlers;
 
 namespace TaskBroker.SSSB.Services
 {
@@ -29,6 +31,7 @@ namespace TaskBroker.SSSB.Services
                 _sssbService = SSSBService.Create(this._services, (options)=> { options.MaxReadersCount = 4; options.Name = ONDEMAND_TASK_SERVICE_NAME; } );
                 _sssbService.OnStartedEvent += async () =>
                 {
+                    this._startDateTime = DateTime.Now;
                     await this.OnStarted(_sssbService.QueueName);
                 };
                 _sssbService.OnStoppedEvent += async () =>

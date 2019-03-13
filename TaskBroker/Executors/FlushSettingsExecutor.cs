@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Coordinator.SSSB;
-using Microsoft.Extensions.Logging;
+using TaskBroker.SSSB.Core;
+using TaskBroker.SSSB.Results;
 using TaskBroker.SSSB.Scheduler;
 
 namespace TaskBroker.SSSB.Executors
@@ -44,9 +45,9 @@ namespace TaskBroker.SSSB.Executors
                     break;
                 case SettingsType.OnDemandTaskSettings:
                     if (_settingsID < 0)
-                        BaseExecutor.FlushStaticSettings();
+                        SettingsService.FlushStaticSettings();
                     else
-                        BaseExecutor.FlushStaticSettings(_settingsID);
+                        SettingsService.FlushStaticSettings(_settingsID);
                     break;
                 case SettingsType.Shedule:
                     if (_settingsID < 0)

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Coordinator.SSSB.EF
+namespace TaskBroker.SSSB.EF
 {
     public partial class Setting
     {

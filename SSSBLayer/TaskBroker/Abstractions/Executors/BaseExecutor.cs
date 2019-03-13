@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Coordinator.Database;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -9,9 +10,9 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
-using Coordinator.Database;
-using Coordinator.SSSB;
-using Coordinator.SSSB.EF;
+using TaskBroker.SSSB.Core;
+using TaskBroker.SSSB.EF;
+using TaskBroker.SSSB.Results;
 
 namespace TaskBroker.SSSB.Executors
 {
@@ -28,8 +29,8 @@ namespace TaskBroker.SSSB.Executors
             this.TaskInfo = args.TaskInfo;
             this.EventDate = args.Atributes.EventDate;
             this.Parameters = args.Atributes.Parameters;
-            this.IsDefered = args.Atributes.isDefered;
-            this.AttemptNumber = args.Atributes.attemptNumber;
+            this.IsDefered = args.Atributes.IsDefered;
+            this.AttemptNumber = args.Atributes.AttemptNumber;
         }
 
         protected ILogger Logger { get; }
@@ -138,7 +139,7 @@ namespace TaskBroker.SSSB.Executors
         /// </summary>
         public NameValueCollection Parameters { get; }
 
-        public bool HasStaticSettings
+        public bool HasSettings
         {
             get
             {
@@ -150,53 +151,18 @@ namespace TaskBroker.SSSB.Executors
         {
             get
             {
-                if (!this.HasStaticSettings)
+                if (!this.HasSettings)
                     return null;
-                return GetStaticSettingsByID(this.TaskInfo.SettingID.Value).GetAwaiter().GetResult();
+                return this.TasksManager.Settings.GetByID(this.TaskInfo.SettingID.Value).GetAwaiter().GetResult();
             }
         }
 
         protected Task<T> GetStaticSettings<T>()
         where T : class
         {
-            if (!this.HasStaticSettings)
+            if (!this.HasSettings)
                 return null;
-            return GetStaticSettings<T>(this.TaskInfo.SettingID.Value);
-        }
-
-        public Task<ExecutorSettings> GetStaticSettingsByID(int settingID)
-        {
-            return _staticSettings.GetOrAdd(settingID, (key) => {
-                Task<string> settings = TasksManager.GetStaticSettings(key);
-                return settings.ContinueWith((antecedent) => new ExecutorSettings(antecedent.Result));
-            });
-        }
-
-        public async Task<T> GetStaticSettings<T>(int settingID)
-        where T : class
-        {
-            ExecutorSettings settings = default(ExecutorSettings);
-            try
-            {
-                settings = await GetStaticSettingsByID(settingID);
-            }
-            catch
-            {
-                _staticSettings.TryRemove(settingID, out var _);
-                throw;
-            }
-
-            return settings.GetDeserialized<T>();
-        }
-
-        public static void FlushStaticSettings()
-        {
-            _staticSettings.Clear();
-        }
-
-        public static void FlushStaticSettings(int settingID)
-        {
-            _staticSettings.TryRemove(settingID, out var _);
+            return this.TasksManager.Settings.GetByID<T>(this.TaskInfo.SettingID.Value);
         }
 
         protected virtual string GetAlertEmails()

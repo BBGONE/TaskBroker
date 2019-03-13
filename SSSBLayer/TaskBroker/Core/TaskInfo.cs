@@ -1,7 +1,7 @@
 ﻿using System;
-using Coordinator.SSSB.EF;
+using TaskBroker.SSSB.EF;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.Core
 {
     public class TaskInfo
     {

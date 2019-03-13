@@ -1,8 +1,8 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-using Coordinator.SSSB;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
+using TaskBroker.SSSB.Factories;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.Core
 {
     public class SSSBService : BaseSSSBService<SSSBMessageDispatcher, SSSBMessageReaderFactory>
     {

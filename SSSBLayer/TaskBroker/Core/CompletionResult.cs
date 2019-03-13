@@ -1,8 +1,7 @@
-﻿namespace TaskBroker.SSSB
+﻿namespace TaskBroker.SSSB.Core
 {
     public enum CompletionResult
     {
-      
         None,
         Completed,
         Cancelled,

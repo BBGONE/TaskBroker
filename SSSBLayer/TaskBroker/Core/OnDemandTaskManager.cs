@@ -3,16 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
-using System.Data;
-using System.Data.SqlClient;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
+using TaskBroker.SSSB.EF;
 using TaskBroker.SSSB.Executors;
-using Coordinator.Database;
-using Coordinator.SSSB.EF;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.Core
 {
     public class OnDemandTaskManager: BaseManager
     {
@@ -20,10 +16,12 @@ namespace TaskBroker.SSSB
         private IExecutor _currentExecutor;
         private readonly ILogger<OnDemandTaskManager> _logger;
         private static readonly ConcurrentDictionary<int, TaskInfo> _taskInfos = new ConcurrentDictionary<int, TaskInfo>();
+        private readonly ISettingsService _settings;
 
-        public OnDemandTaskManager(IServiceProvider services, ILogger<OnDemandTaskManager> logger) :
+        public OnDemandTaskManager(IServiceProvider services, ISettingsService settings, ILogger<OnDemandTaskManager> logger) :
             base(services)
         {
+            this._settings = settings;
             this._logger = logger;
         }
 
@@ -45,10 +43,11 @@ namespace TaskBroker.SSSB
             set { _currentExecutor = value; }
         }
 
+        public ISettingsService Settings => _settings;
+
         public async Task<TaskInfo> GetTaskInfo(int id)
         {
-            TaskInfo res;
-            if (_taskInfos.TryGetValue(id, out res))
+            if (_taskInfos.TryGetValue(id, out TaskInfo res))
                 return res;
 
             using (var scope = this.Services.CreateScope())
@@ -71,45 +70,6 @@ namespace TaskBroker.SSSB
         public static void FlushTaskInfos()
         {
             _taskInfos.Clear();
-        }
-
-        public async Task<string> GetExecutorStaticSettings(int taskID)
-        {
-            var connectionManager = this.Services.GetRequiredService<IConnectionManager>();
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.Suppress, TimeSpan.FromSeconds(30), TransactionScopeAsyncFlowOption.Enabled))
-            using (var connection = await connectionManager.CreateSSSBConnectionAsync(CancellationToken.None))
-            {
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "[PPS].[sp_GetOnDemandExecutorStaticSettings]";
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add(new SqlParameter("taskID", SqlDbType.Int) { Value = taskID });
-                cmd.Parameters.Add(new SqlParameter("@executorSettings", SqlDbType.Xml) { Direction = ParameterDirection.Output });
-
-                await cmd.ExecuteNonQueryAsync();
-
-                return cmd.Parameters["@executorSettings"].Value?.ToString();
-            }
-        }
-
-        /// <summary>
-        /// получить настройки экзекутора
-        /// </summary>
-        public async Task<string> GetStaticSettings(int settingID)
-        {
-            var connectionManager = this.Services.GetRequiredService<IConnectionManager>();
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.Suppress, TimeSpan.FromSeconds(30), TransactionScopeAsyncFlowOption.Enabled))
-            using (var connection = await connectionManager.CreateSSSBConnectionAsync(CancellationToken.None))
-            {
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "[PPS].[sp_GetStaticSettings]";
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add(new SqlParameter("@settingID", SqlDbType.Int) { Value = settingID });
-                cmd.Parameters.Add(new SqlParameter("@ExecutorSettings", SqlDbType.Xml) { Direction = ParameterDirection.Output });
-
-                await cmd.ExecuteNonQueryAsync();
-
-                return cmd.Parameters["@ExecutorSettings"].Value?.ToString();
-            }
         }
 
         protected override void OnDispose()

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Coordinator.SSSB;
+using TaskBroker.SSSB.Results;
 
 namespace TaskBroker.SSSB.Executors
 {

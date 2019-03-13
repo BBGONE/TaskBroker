@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Coordinator.Database;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -8,8 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
-using Coordinator.Database;
-using Coordinator.SSSB.EF;
+using TaskBroker.SSSB.EF;
 
 namespace TaskBroker.SSSB.Scheduler
 {

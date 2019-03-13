@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Coordinator.SSSB.EF
+namespace TaskBroker.SSSB.EF
 {
     public partial class SSSBDbContext : DbContext
     {

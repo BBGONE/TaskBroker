@@ -4,10 +4,11 @@ using Shared.Errors;
 using System;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using TaskBroker.SSSB.Core;
 using TaskBroker.SSSB.Executors;
-using Coordinator.SSSB;
+using TaskBroker.SSSB.Results;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.MessageHandlers
 {
     public class TaskMessageHandler : BaseMessageHandler<ServiceMessageEventArgs>
     {

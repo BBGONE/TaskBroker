@@ -3,8 +3,9 @@ using Shared.Errors;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using TaskBroker.SSSB.Core;
+using TaskBroker.SSSB.Results;
 using TaskBroker.SSSB.Utils;
-using Coordinator.SSSB;
 
 namespace TaskBroker.SSSB.Executors
 {

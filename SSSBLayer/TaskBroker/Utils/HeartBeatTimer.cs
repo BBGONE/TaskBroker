@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Coordinator.Database;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Transactions;
-using Coordinator.Database;
 
-namespace Coordinator.SSSB.Utils
+namespace TaskBroker.SSSB.Utils
 {
     public class HeartBeatTimer: IDisposable
     {
