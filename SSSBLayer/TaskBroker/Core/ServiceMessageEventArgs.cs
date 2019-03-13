@@ -29,6 +29,18 @@ namespace TaskBroker.SSSB.Core
             _services = _serviceScope.ServiceProvider;
         }
 
+        public ServiceMessageEventArgs(ServiceMessageEventArgs args, SSSBMessage newMessage)
+        {
+            _message = newMessage;
+            _service = args._service;
+            _token = args._token;
+            _taskID = args._taskID;
+            _serviceScope = args._serviceScope;
+            _tcs = args._tcs;
+            _completion = args._completion;
+            _services = args._services;
+        }
+
         public TaskCompletionSource<HandleMessageResult> TaskCompletionSource
         {
             get

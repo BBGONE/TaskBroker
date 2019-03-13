@@ -99,10 +99,11 @@ namespace TaskBroker.SSSB.MessageHandlers
             {
                 var executor = (IExecutor)ActivatorUtilities.CreateInstance(args.Services, executorArgs.TaskInfo.ExecutorType, new object[] { executorArgs });
                 executorArgs.TasksManager.CurrentExecutor = executor;
-                Task<HandleMessageResult> execResTask = RunExecutor(executor, args);
+                Task<HandleMessageResult> execResTask = execResTask = RunExecutor(executor, args);
+
                 if (executor.IsAsyncProcessing && !execResTask.IsCompleted)
                 {
-                    this.ExecuteLongRun(execResTask, executorArgs, args);
+                    this.ExecuteAsync(execResTask, executorArgs, args);
                 }
                 else
                 {
@@ -125,7 +126,7 @@ namespace TaskBroker.SSSB.MessageHandlers
             }
         }
 
-        protected virtual void ExecuteLongRun(Task<HandleMessageResult> execResTask, ExecutorArgs executorArgs, ServiceMessageEventArgs serviceArgs)
+        protected virtual void ExecuteAsync(Task<HandleMessageResult> execResTask, ExecutorArgs executorArgs, ServiceMessageEventArgs serviceArgs)
         {
             var continuationTask = execResTask.ContinueWith((antecedent) =>
             {

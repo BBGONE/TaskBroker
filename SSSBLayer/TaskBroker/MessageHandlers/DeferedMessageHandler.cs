@@ -25,6 +25,7 @@ namespace TaskBroker.SSSB.MessageHandlers
         {
             MessageAtributes messageAtributes = null;
             SSSBMessage originalMessage = null;
+            ServiceMessageEventArgs deferedServiceMessageArgs = serviceMessageArgs;
             try
             {
                 serviceMessageArgs.Token.ThrowIfCancellationRequested();
@@ -48,6 +49,7 @@ namespace TaskBroker.SSSB.MessageHandlers
                     ServiceName = serviceName,
                     Body = originalMessageBody
                 };
+                serviceMessageArgs = new ServiceMessageEventArgs(deferedServiceMessageArgs, originalMessage);
             }
             catch (OperationCanceledException)
             {

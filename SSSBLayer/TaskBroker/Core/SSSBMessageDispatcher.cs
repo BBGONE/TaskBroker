@@ -91,7 +91,7 @@ namespace TaskBroker.SSSB.Core
                     try
                     {
                         var customHandler = new CustomMessageHandler(this._sssbService, this._services, this._standardMessageHandlers);
-                        await customHandler.HandleMessage(dbconnection, message, token, messageHandler, serviceArgs);
+                        await customHandler.HandleMessage(dbconnection, messageHandler, serviceArgs);
                     }
                     catch (Exception ex)
                     {

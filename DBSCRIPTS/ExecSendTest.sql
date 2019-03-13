@@ -1,11 +1,8 @@
 USE [rebus2_test]
 GO
 
-DECLARE @RC int
-DECLARE @BatchID int
-DECLARE @category nvarchar(100)
-DECLARE @infoType nvarchar(100)
-DECLARE @context uniqueidentifier
+DECLARE @RC int, @BatchID int, @category nvarchar(100), @infoType nvarchar(100), @context uniqueidentifier;
+DECLARE @ch UNIQUEIDENTIFIER;
 
 SET @BatchID=1;
 SET @category='category';
@@ -16,7 +13,10 @@ EXECUTE @RC = [dbo].[sp_SendTest]
    @BatchID
   ,@category
   ,@infoType
-  ,@context
+  ,@context, 
+  @ch OUTPUT;
+
+SELECT @ch;
 GO
 
 

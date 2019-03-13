@@ -30,14 +30,14 @@ namespace TaskBroker.SSSB.Executors
             this.Debug(string.Format("Executing SSSB Task: {0} Batch: {1} ClientContextID {2}", this.TaskInfo.OnDemandTaskID, _batchId, _clientContextID));
             if (this.AttemptNumber == 0)
             {
-                this.Debug(string.Format("*** Defer SSSB Task: {0} Batch: {1} ClientContextID {2}", this.TaskInfo.OnDemandTaskID, _batchId, _clientContextID ));
+                this.Debug(string.Format("*** Defer SSSB Task: {0} Batch: {1} ConversationHandle  {2}", this.TaskInfo.OnDemandTaskID, _batchId, this.Message.ConversationHandle ));
                 Guid initiatorConversationGroup = Guid.Parse(_clientContextID);
-                return this.Defer("PPS_OnDemandTaskService", DateTime.Now.AddSeconds(10), this.AttemptNumber + 1);
+                return this.Defer("PPS_OnDemandTaskService", DateTime.Now.AddSeconds(5), this.AttemptNumber + 1);
             }
             else
             {
-                await Task.Delay(3000);
-                this.Debug(string.Format("Executed  SSSB Task: {0} Batch: {1} ClientContextID {2}", this.TaskInfo.OnDemandTaskID, _batchId, _clientContextID));
+                await Task.Delay(1000);
+                this.Debug(string.Format("*******************************  EXECUTED  SSSB ConversationHandle  {0}", this.Message.ConversationHandle));
                 return this.EndDialog();
             }
         }

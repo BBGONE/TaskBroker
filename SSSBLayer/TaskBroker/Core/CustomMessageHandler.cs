@@ -36,18 +36,18 @@ namespace TaskBroker.SSSB.Core
             get;
         }
 
-        public async Task HandleMessage(SqlConnection dbconnection, SSSBMessage message,
-            CancellationToken token,
+        public async Task HandleMessage(SqlConnection dbconnection,
             IMessageHandler<ServiceMessageEventArgs> messageHandler,
             ServiceMessageEventArgs serviceArgs)
         {
+            var originalServiceArgs = serviceArgs;
             bool isSync = true;
-            Task processTask = Task.FromException(new Exception($"The message: {message.MessageType} ConversationHandle: {message.ConversationHandle} is not handled"));
+            Task processTask = Task.FromException(new Exception($"The message: {serviceArgs.Message.MessageType} ConversationHandle: {serviceArgs.Message.ConversationHandle} is not handled"));
             try
             {
                 using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    serviceArgs = await messageHandler.HandleMessage(this.SSSBService, serviceArgs);
+                    serviceArgs = await messageHandler.HandleMessage(this.SSSBService, originalServiceArgs);
                     transactionScope.Complete();
                 }
 
@@ -62,7 +62,7 @@ namespace TaskBroker.SSSB.Core
             }
             finally
             {
-                processTask = this._HandleProcessingResult(dbconnection, message, token, serviceArgs, isSync);
+                processTask = this._HandleProcessingResult(dbconnection, serviceArgs, isSync);
             }
 
             if (isSync)
@@ -115,8 +115,11 @@ namespace TaskBroker.SSSB.Core
             }
         }
 
-        private Task _HandleProcessingResult(SqlConnection dbconnection, SSSBMessage message, CancellationToken token, ServiceMessageEventArgs serviceArgs, bool isSync)
+        private Task _HandleProcessingResult(SqlConnection dbconnection, ServiceMessageEventArgs serviceArgs, bool isSync)
         {
+            SSSBMessage message = serviceArgs.Message;
+            CancellationToken token = serviceArgs.Token;
+
             Task processTask = serviceArgs.Completion.ContinueWith(async (antecedent) =>
             {
                 try
