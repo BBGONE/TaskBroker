@@ -61,7 +61,7 @@ namespace TaskBroker.SSSB.MessageHandlers
                 return serviceMessageArgs;
             }
 
-            OnDemandTaskManager taskManager = serviceMessageArgs.Services.GetRequiredService<OnDemandTaskManager>();
+            var taskManager = serviceMessageArgs.Services.GetRequiredService<IOnDemandTaskManager>();
             try
             {
                 serviceMessageArgs.Token.ThrowIfCancellationRequested();

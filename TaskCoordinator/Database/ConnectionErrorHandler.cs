@@ -46,7 +46,7 @@ namespace Coordinator.Database
             }
 
             int delay = (_counter % MAX_COUNT) * 1000;
-            await Task.Delay(delay, cancelation).ConfigureAwait(false);
+            await Task.Delay(delay, cancelation);
         }
     
     }

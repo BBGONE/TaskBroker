@@ -66,7 +66,7 @@ namespace TaskBroker.SSSB.Core
         {
             try
             {
-                _queueName = await _serviceBrokerHelper.GetServiceQueueName(this.Name).ConfigureAwait(false);
+                _queueName = await _serviceBrokerHelper.GetServiceQueueName(this.Name);
                 if (_queueName == null)
                     throw new Exception(string.Format(ServiceBrokerResources.ServiceInitializationErrMsg, this.Name));
                 this._tasksCoordinator.Value.Start(this._rootToken);
@@ -132,12 +132,12 @@ namespace TaskBroker.SSSB.Core
                         if ((i % 20) == 0)
                             throw new Exception(string.Format("After 20 attempts, still can not connect to the database in the SSSB service: {0}!", this.Name));
 
-                        await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(10));
                     }
 
                     ct.ThrowIfCancellationRequested();
                     this._stopStartingSource = null;
-                    await this.InternalStart().ConfigureAwait(false);
+                    await this.InternalStart();
                 }
                 catch (OperationCanceledException)
                 {

@@ -34,8 +34,8 @@ namespace TaskBroker.Services
                 Guid conversationGroup = sssb.GetValue<Guid>("InstanceID");
                 return ActivatorUtilities.CreateInstance<HeartBeatTimer>(sp, new object[] { conversationGroup });
             });
-            services.TryAddTransient<OnDemandTaskManager>();
-            services.TryAddTransient<ISettingsService, SettingsService>();
+            services.TryAddScoped<IOnDemandTaskManager, OnDemandTaskManager>();
+            services.TryAddScoped<ISettingsService, SettingsService>();
             services.AddHostedService<PubSubService>();
         }
     }

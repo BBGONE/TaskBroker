@@ -21,8 +21,8 @@ namespace TaskBroker.SSSB
             });
             services.AddSSSBService();
             services.TryAddSingleton<OnDemandTaskSSSBService>();
-            services.TryAddTransient<OnDemandTaskManager>();
-            services.TryAddTransient<ISettingsService, SettingsService>();
+            services.TryAddScoped<IOnDemandTaskManager, OnDemandTaskManager>();
+            services.TryAddScoped<ISettingsService, SettingsService>();
             services.AddHostedService<OnDemandTaskService>();
         }
     }

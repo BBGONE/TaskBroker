@@ -41,11 +41,11 @@ namespace Coordinator
         {
             if (this._coordinator.IsPaused)
             {
-                await Task.Delay(1000, token).ConfigureAwait(false);
+                await Task.Delay(1000, token);
                 return new MessageReaderResult() { IsWorkDone = true, IsRemoved = false };
             }
             token.ThrowIfCancellationRequested();
-            bool isDidWork = await this.DoWork(this.IsPrimaryReader, token).ConfigureAwait(false) > 0;
+            bool isDidWork = await this.DoWork(this.IsPrimaryReader, token) > 0;
 
             return this.AfterProcessedMessage(isDidWork, token);
         }

@@ -4,9 +4,9 @@ using System;
 
 namespace TaskBroker.SSSB.Core
 {
-    public class BaseManager : IDisposable
+    public class BaseManager : IDisposable, IBaseManager
     {
-        private Lazy<SSSBDbContext> _db;
+        private readonly Lazy<SSSBDbContext> _db;
         private readonly IServiceProvider _services;
 
         public BaseManager(IServiceProvider services)

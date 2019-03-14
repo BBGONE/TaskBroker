@@ -68,11 +68,11 @@ namespace Coordinator
             {
                 this._stopTokenSource.Cancel();
                 this.IsPaused = false;
-                await Task.Delay(1000).ConfigureAwait(false);
+                await Task.Delay(1000);
                 var tasks = this._tasks.Select(p => p.Value).ToArray();
                 if (tasks.Length > 0)
                 {
-                    await Task.WhenAny(Task.WhenAll(tasks), Task.Delay(STOP_TIMEOUT)).ConfigureAwait(false);
+                    await Task.WhenAny(Task.WhenAll(tasks), Task.Delay(STOP_TIMEOUT));
                 }
             }
             catch (OperationCanceledException)
@@ -179,7 +179,7 @@ namespace Coordinator
                     bool loopAgain = false;
                     do
                     {
-                        readerResult = await reader.TryProcessMessage(token).ConfigureAwait(false);
+                        readerResult = await reader.TryProcessMessage(token);
                         loopAgain = !readerResult.IsRemoved && !token.IsCancellationRequested;
                         // the task is rescheduled to the threadpool which allows other scheduled tasks to be processed
                         // otherwise it could use exclusively the threadpool thread

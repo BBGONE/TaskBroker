@@ -25,19 +25,19 @@ namespace Coordinator.Database
 
         public async Task<SqlConnection> GetConnectionByDbNameAsync(string dbname)
         {
-            return await DbConnectionScope.GetOpenConnectionAsync<SqlConnection>(_dbNameFactory.Value, dbname).ConfigureAwait(false);
+            return await DbConnectionScope.GetOpenConnectionAsync<SqlConnection>(_dbNameFactory.Value, dbname);
         }
 
         public async Task<SqlConnection> GetConnectionByNameAsync(string connectionName)
         {
-            return await DbConnectionScope.GetOpenConnectionAsync<SqlConnection>(_dbFactory.Value, connectionName).ConfigureAwait(false);
+            return await DbConnectionScope.GetOpenConnectionAsync<SqlConnection>(_dbFactory.Value, connectionName);
         }
 
         public async Task<SqlConnection> CreateConnectionByDbNameAsync(string dbname)
         {
             SqlConnection cn = (SqlConnection)_dbNameFactory.Value.CreateConnection(dbname);
             if (cn.State == System.Data.ConnectionState.Closed)
-                await cn.OpenAsync().ConfigureAwait(false);
+                await cn.OpenAsync();
             return cn;
         }
 
@@ -45,7 +45,7 @@ namespace Coordinator.Database
         {
             SqlConnection cn = (SqlConnection)_dbFactory.Value.CreateConnection(connectionName);
             if (cn.State == System.Data.ConnectionState.Closed)
-                await cn.OpenAsync().ConfigureAwait(false);
+                await cn.OpenAsync();
             return cn;
         }
 
@@ -63,7 +63,7 @@ namespace Coordinator.Database
         {
             try
             {
-                using (var conn = await CreateConnectionByNameAsync(CONNECTION_STRING_NAME).ConfigureAwait(false))
+                using (var conn = await CreateConnectionByNameAsync(CONNECTION_STRING_NAME))
                 {
                 }
                 return true;
@@ -76,12 +76,12 @@ namespace Coordinator.Database
 
         public async Task<SqlConnection> GetSSSBConnectionAsync()
         {
-            return await GetConnectionByNameAsync(CONNECTION_STRING_NAME).ConfigureAwait(false);
+            return await GetConnectionByNameAsync(CONNECTION_STRING_NAME);
         }
 
         public async Task<SqlConnection> CreateSSSBConnectionAsync(CancellationToken token)
         {
-            return await CreateConnectionByNameAsync(CONNECTION_STRING_NAME).ConfigureAwait(false);
+            return await CreateConnectionByNameAsync(CONNECTION_STRING_NAME);
         }
 
         public async Task<bool> IsSSSBConnectionOKAsync()

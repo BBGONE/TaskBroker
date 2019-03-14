@@ -2,7 +2,7 @@
 {
     public class ExecutorArgs
     {
-        public ExecutorArgs(OnDemandTaskManager tasksManager, TaskInfo taskInfo, SSSBMessage message, MessageAtributes messageAtributes)
+        public ExecutorArgs(IOnDemandTaskManager tasksManager, TaskInfo taskInfo, SSSBMessage message, MessageAtributes messageAtributes)
         {
             this.TasksManager = tasksManager;
             this.TaskInfo = taskInfo;
@@ -10,7 +10,7 @@
             this.Atributes = messageAtributes;
         }
 
-        public OnDemandTaskManager TasksManager { get; }
+        public IOnDemandTaskManager TasksManager { get; }
         public TaskInfo TaskInfo { get; }
         public MessageAtributes Atributes { get; }
         public SSSBMessage Message { get; }

@@ -1,5 +1,4 @@
 ﻿using Coordinator.Database;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Shared.Errors;
 using System;
@@ -7,31 +6,27 @@ using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
-using TaskBroker.SSSB.MessageHandlers;
+using TaskBroker.SSSB.Core;
 using TaskBroker.SSSB.Results;
 using TaskBroker.SSSB.Utils;
 
-namespace TaskBroker.SSSB.Core
+namespace TaskBroker.SSSB.MessageHandlers
 {
-    public class CustomMessageHandler
+    public class CustomMessageHandler : ICustomMessageHandler
     {
         private readonly ILogger _logger;
         private readonly IStandardMessageHandlers _standardMessageHandlers;
+        private readonly IConnectionManager _connectionManager;
 
-        public CustomMessageHandler(ISSSBService sssbService, IServiceProvider services, IStandardMessageHandlers standardMessageHandlers)
+        public CustomMessageHandler(ISSSBService sssbService, IConnectionManager connectionManager, IStandardMessageHandlers standardMessageHandlers, ILogger<CustomMessageHandler> logger)
         {
-            this.Services = services;
+            this._connectionManager = connectionManager;
             this.SSSBService = sssbService;
             _standardMessageHandlers = standardMessageHandlers;
-            _logger = services.GetRequiredService<ILogger<CustomMessageHandler>>();
+            _logger = logger;
         }
 
         public ISSSBService SSSBService
-        {
-            get;
-        }
-
-        public IServiceProvider Services
         {
             get;
         }
@@ -75,10 +70,9 @@ namespace TaskBroker.SSSB.Core
         private async Task _HandleAsyncProcessingResult(SSSBMessage message, CancellationToken token, Task<HandleMessageResult> completionTask)
         {
             token.ThrowIfCancellationRequested();
-            var connectionManager = this.Services.GetRequiredService<IConnectionManager>();
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.RequiresNew, TransactionScopeAsyncFlowOption.Enabled))
-            using (var dbconnection = await connectionManager.CreateSSSBConnectionAsync(token))
+            using (var dbconnection = await _connectionManager.CreateSSSBConnectionAsync(token))
             {
                 await _HandleSyncProcessingResult(dbconnection, message, token, completionTask);
 

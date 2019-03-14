@@ -18,8 +18,6 @@ namespace TaskBroker.SSSB.Executors
 {
     public abstract class BaseExecutor: IExecutor, IDisposable
     {
-        protected static readonly ConcurrentDictionary<int, Task<ExecutorSettings>> _staticSettings = new ConcurrentDictionary<int, Task<ExecutorSettings>>();
-
         public BaseExecutor(ExecutorArgs args)
         {
             Type loggerType = typeof(ILogger<>);
@@ -35,7 +33,7 @@ namespace TaskBroker.SSSB.Executors
 
         protected ILogger Logger { get; }
 
-        protected OnDemandTaskManager TasksManager { get; }
+        protected IOnDemandTaskManager TasksManager { get; }
        
         public bool IsDefered { get; }
 

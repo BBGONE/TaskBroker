@@ -288,7 +288,7 @@ namespace TaskBroker.SSSB.Core
                     command.Parameters.Add(new SqlParameter("@waitTimeout", SqlDbType.Int, 0, ParameterDirection.Input, true, 0, 0, "waitTimeout", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(waitTimeout)));
                     command.Parameters.Add(new SqlParameter("@conversation_group", SqlDbType.UniqueIdentifier, 0, ParameterDirection.Input, true, 0, 0, "conversation_group", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(conversation_group)));
 
-                    return await command.ExecuteReaderAsync(procedureResultBehaviour, cancellation).ConfigureAwait(false);
+                    return await command.ExecuteReaderAsync(procedureResultBehaviour, cancellation);
                 }
             }
             catch (SqlException ex)
@@ -320,7 +320,7 @@ namespace TaskBroker.SSSB.Core
                     command.Parameters.Add(new SqlParameter("@fetchSize", SqlDbType.Int, 0, ParameterDirection.Input, true, 0, 0, "fetchSize", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(fetchSize)));
                     command.Parameters.Add(new SqlParameter("@conversation_group", SqlDbType.UniqueIdentifier, 0, ParameterDirection.Input, true, 0, 0, "conversation_group", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(conversation_group)));
 
-                    return await command.ExecuteReaderAsync(procedureResultBehaviour, cancellation).ConfigureAwait(false);
+                    return await command.ExecuteReaderAsync(procedureResultBehaviour, cancellation);
                 }
             }
             catch (SqlException ex)
@@ -338,7 +338,7 @@ namespace TaskBroker.SSSB.Core
             string queueName = string.Empty;
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
             {
-                var dbconnection = await _connectionManager.CreateSSSBConnectionAsync(CancellationToken.None).ConfigureAwait(false);
+                var dbconnection = await _connectionManager.CreateSSSBConnectionAsync(CancellationToken.None);
                 try
                 {
                     using (dbconnection)
@@ -351,7 +351,7 @@ namespace TaskBroker.SSSB.Core
                         command.Parameters.Add(new SqlParameter("@serviceName", SqlDbType.NVarChar, 128, ParameterDirection.Input, true, 0, 0, "serviceName", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(serviceName)));
                         command.Parameters.Add(new SqlParameter("@queueName", SqlDbType.NVarChar, 128, ParameterDirection.InputOutput, true, 0, 0, "queueName", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(queueName)));
 
-                        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+                        await command.ExecuteNonQueryAsync();
                         if (command.Parameters["@queueName"].Value == DBNull.Value)
                             queueName = null;
                         else
@@ -384,7 +384,7 @@ namespace TaskBroker.SSSB.Core
                         SqlParameter qnParam = command.Parameters.Add(new SqlParameter("@queueName", SqlDbType.NVarChar, 128));
                         qnParam.Value = queueName;
 
-                        SqlDataReader dr = await command.ExecuteReaderAsync().ConfigureAwait(false);
+                        SqlDataReader dr = await command.ExecuteReaderAsync();
                         try
                         {
                             if (dr.Read())
@@ -424,7 +424,7 @@ namespace TaskBroker.SSSB.Core
                     {
                         string sql = string.Format("alter queue {0} with status = on", queueName);
                         command.CommandText = sql;
-                        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+                        await command.ExecuteNonQueryAsync();
                     }
 
                     transactionScope.Complete();

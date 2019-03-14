@@ -253,7 +253,7 @@ namespace TaskBroker.SSSB.Utils
             Debug($"Executing method GetServiceQueueName({serviceName})");
 			try
 			{
-                return await _manager.GetServiceQueueName(serviceName).ConfigureAwait(false);
+                return await _manager.GetServiceQueueName(serviceName);
             }
             catch (SqlException ex)
             {

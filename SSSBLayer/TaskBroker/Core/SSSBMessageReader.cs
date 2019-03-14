@@ -120,13 +120,13 @@ namespace TaskBroker.SSSB.Core
                         (int)DefaultWaitForTimeout.TotalMilliseconds,
                         _conversation_group,
                         DEFAULT_COMMAND_BEHAVIOR,
-                        token).ConfigureAwait(false);
+                        token);
                 else
                     reader = await _manager.ReceiveMessagesNoWaitAsync(dbconnection, this._service.QueueName,
                         DEFAULT_FETCH_SIZE,
                         _conversation_group,
                         DEFAULT_COMMAND_BEHAVIOR,
-                        token).ConfigureAwait(false);
+                        token);
 
                 // no result after cancellation
                 if (reader == null)
@@ -159,7 +159,7 @@ namespace TaskBroker.SSSB.Core
 
         protected override async Task<MessageProcessingResult> DispatchMessage(SSSBMessage message, long taskId, CancellationToken token, SqlConnection state)
         {
-            var res = await this._dispatcher.DispatchMessage(message, taskId, token, state).ConfigureAwait(false);
+            var res = await this._dispatcher.DispatchMessage(message, taskId, token, state);
             return res;
         }
 
@@ -169,7 +169,7 @@ namespace TaskBroker.SSSB.Core
             Exception error = null;
             try
             {
-                dbconnection = await _connectionManager.CreateSSSBConnectionAsync(token).ConfigureAwait(false);
+                dbconnection = await _connectionManager.CreateSSSBConnectionAsync(token);
             }
             catch (Exception ex)
             {
@@ -178,7 +178,7 @@ namespace TaskBroker.SSSB.Core
 
             if (error != null)
             {
-                await _errorHandler.Handle(error, token).ConfigureAwait(false);
+                await _errorHandler.Handle(error, token);
                 throw error;
             }
 
@@ -211,7 +211,7 @@ namespace TaskBroker.SSSB.Core
                 try
                 {
                     dbconnection = await this.TryGetConnection(token);
-                    msg = await this.ReadMessage(isPrimaryReader, this.taskId, token, dbconnection).ConfigureAwait(false);
+                    msg = await this.ReadMessage(isPrimaryReader, this.taskId, token, dbconnection);
                 }
                 finally
                 {
@@ -227,7 +227,7 @@ namespace TaskBroker.SSSB.Core
                         this.Coordinator.OnBeforeDoWork(this);
                         try
                         {
-                            MessageProcessingResult res = await this.DispatchMessage(msg, this.taskId, token, dbconnection).ConfigureAwait(false);
+                            MessageProcessingResult res = await this.DispatchMessage(msg, this.taskId, token, dbconnection);
                             if (res.isRollBack)
                             {
                                 await this.OnRollback(msg, token);

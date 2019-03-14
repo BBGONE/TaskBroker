@@ -32,7 +32,7 @@ namespace TaskBroker.SSSB.Executors
             {
                 this.Debug(string.Format("*** Defer SSSB Task: {0} Batch: {1} ConversationHandle  {2}", this.TaskInfo.OnDemandTaskID, _batchId, this.Message.ConversationHandle ));
                 Guid initiatorConversationGroup = Guid.Parse(_clientContextID);
-                return this.Defer("PPS_OnDemandTaskService", DateTime.Now.AddSeconds(5), this.AttemptNumber + 1);
+                return this.Defer("PPS_OnDemandTaskService", DateTime.Now.AddSeconds(15), this.AttemptNumber + 1);
             }
             else
             {

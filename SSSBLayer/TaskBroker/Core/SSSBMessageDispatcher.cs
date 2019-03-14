@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Shared.Errors;
+using SSSBLayer.TaskBroker.Factories;
 using System;
 using System.Collections.Concurrent;
 using System.Data.SqlClient;
@@ -61,7 +62,7 @@ namespace TaskBroker.SSSB.Core
                     using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
                     {
                         ErrorMessageEventArgs errArgs = new ErrorMessageEventArgs(message, this._sssbService, msgerr.FirstError, token);
-                        errArgs = await errorMessageHandler.HandleMessage(this._sssbService, errArgs).ConfigureAwait(continueOnCapturedContext: false);
+                        errArgs = await errorMessageHandler.HandleMessage(this._sssbService, errArgs);
 
                         transactionScope.Complete();
                     }
@@ -90,15 +91,14 @@ namespace TaskBroker.SSSB.Core
                     ServiceMessageEventArgs serviceArgs = this.CreateServiceMessageEventArgs(message, token);
                     try
                     {
-                        var customHandler = new CustomMessageHandler(this._sssbService, this._services, this._standardMessageHandlers);
+                        var customHandlerFactory = serviceArgs.Services.GetRequiredService<ICustomMessageHandlerFactory>();
+                        var customHandler = customHandlerFactory.Create(serviceArgs);
                         await customHandler.HandleMessage(dbconnection, messageHandler, serviceArgs);
                     }
                     catch (Exception ex)
                     {
-                        if (!serviceArgs.TaskCompletionSource.TrySetException(ex))
-                        {
-                            _logger.LogError(ErrorHelper.GetFullMessage(ex));
-                        }
+                        _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                        serviceArgs.TaskCompletionSource.TrySetException(ex);
                     }
                 };
             }
@@ -144,9 +144,9 @@ namespace TaskBroker.SSSB.Core
                 end_dialog_with_error = msgerr.ErrorCount >= MAX_MESSAGE_ERROR_COUNT;
 
             if (end_dialog_with_error)
-                await this.DispatchErrorMessage(dbconnection, message, msgerr, token).ConfigureAwait(continueOnCapturedContext: false);
+                await this.DispatchErrorMessage(dbconnection, message, msgerr, token);
             else
-                rollBack = await this._DispatchMessage(dbconnection, message, token).ConfigureAwait(continueOnCapturedContext: false);
+                rollBack = await this._DispatchMessage(dbconnection, message, token);
 
             return new MessageProcessingResult() { isRollBack = rollBack };
         }

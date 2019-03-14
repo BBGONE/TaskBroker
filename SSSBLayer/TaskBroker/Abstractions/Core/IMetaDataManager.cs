@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace TaskBroker.SSSB.Core
 {
-    public interface IMetaDataManager
+    public interface IMetaDataManager: IBaseManager
     {
         int MetaDataID { get; }
         Task<MetaData> GetMetaData(CancellationToken token = default(CancellationToken));

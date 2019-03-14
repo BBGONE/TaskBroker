@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
@@ -10,19 +9,15 @@ using TaskBroker.SSSB.Executors;
 
 namespace TaskBroker.SSSB.Core
 {
-    public class OnDemandTaskManager: BaseManager
+    public class OnDemandTaskManager : BaseManager, IOnDemandTaskManager
     {
         private Guid _id = Guid.Empty;
-        private IExecutor _currentExecutor;
-        private readonly ILogger<OnDemandTaskManager> _logger;
         private static readonly ConcurrentDictionary<int, TaskInfo> _taskInfos = new ConcurrentDictionary<int, TaskInfo>();
-        private readonly ISettingsService _settings;
 
-        public OnDemandTaskManager(IServiceProvider services, ISettingsService settings, ILogger<OnDemandTaskManager> logger) :
+        public OnDemandTaskManager(IServiceProvider services, ISettingsService settings) :
             base(services)
         {
-            this._settings = settings;
-            this._logger = logger;
+            this.Settings = settings;
         }
 
         public Guid ID
@@ -39,11 +34,14 @@ namespace TaskBroker.SSSB.Core
       
         public IExecutor CurrentExecutor
         {
-            get { return _currentExecutor; }
-            set { _currentExecutor = value; }
+            get;
+            set;
         }
 
-        public ISettingsService Settings => _settings;
+        public ISettingsService Settings
+        {
+            get;
+        }
 
         public async Task<TaskInfo> GetTaskInfo(int id)
         {
@@ -76,10 +74,10 @@ namespace TaskBroker.SSSB.Core
         {
             try
             {
-                var executor = this._currentExecutor;
+                var executor = this.CurrentExecutor;
                 if (executor != null)
                 {
-                    this._currentExecutor = null;
+                    this.CurrentExecutor = null;
                     (executor as IDisposable)?.Dispose();
                 }
             }
