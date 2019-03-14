@@ -40,14 +40,15 @@ namespace TaskBroker.SSSB.Core
             IMessageHandler<ServiceMessageEventArgs> messageHandler,
             ServiceMessageEventArgs serviceArgs)
         {
-            var originalServiceArgs = serviceArgs;
+            var previousServiceArgs = serviceArgs;
             bool isSync = true;
             Task processTask = Task.FromException(new Exception($"The message: {serviceArgs.Message.MessageType} ConversationHandle: {serviceArgs.Message.ConversationHandle} is not handled"));
             try
             {
+                // handle message in its own transaction
                 using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    serviceArgs = await messageHandler.HandleMessage(this.SSSBService, originalServiceArgs);
+                    serviceArgs = await messageHandler.HandleMessage(this.SSSBService, previousServiceArgs);
                     transactionScope.Complete();
                 }
 

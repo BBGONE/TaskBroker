@@ -24,15 +24,16 @@ namespace TaskBroker.SSSB.MessageHandlers
         public override async Task<ServiceMessageEventArgs> HandleMessage(ISSSBService sender, ServiceMessageEventArgs serviceMessageArgs)
         {
             MessageAtributes messageAtributes = null;
-            SSSBMessage originalMessage = null;
-            ServiceMessageEventArgs deferedServiceMessageArgs = serviceMessageArgs;
+            SSSBMessage deferedMessage = null;
+            ServiceMessageEventArgs previousServiceMessageArgs = serviceMessageArgs;
+            var tcs = serviceMessageArgs.TaskCompletionSource;
             try
             {
                 serviceMessageArgs.Token.ThrowIfCancellationRequested();
                 XElement envelopeXml = serviceMessageArgs.Message.GetMessageXML();
-                byte[] originalMessageBody = Convert.FromBase64String(envelopeXml.Element("body").Value);
-                XElement originalMessageXml = originalMessageBody.GetMessageXML();
-                messageAtributes = originalMessageXml.GetMessageAttributes();
+                byte[] deferedMessageBody = Convert.FromBase64String(envelopeXml.Element("body").Value);
+                XElement deferedMessageXml = deferedMessageBody.GetMessageXML();
+                messageAtributes = deferedMessageXml.GetMessageAttributes();
                 messageAtributes.IsDefered = true;
                 messageAtributes.AttemptNumber = (int)envelopeXml.Attribute("attemptNumber");
                 string messageType = (string)envelopeXml.Attribute("messageType");
@@ -43,28 +44,29 @@ namespace TaskBroker.SSSB.MessageHandlers
                 Guid conversationHandle = Guid.Parse(envelopeXml.Attribute("conversationHandle").Value);
                 Guid conversationGroupID = Guid.Parse(envelopeXml.Attribute("conversationGroupID").Value);
 
-                originalMessage = new SSSBMessage(conversationHandle, conversationGroupID, validationType, contractName)
+                deferedMessage = new SSSBDeferedMessage(conversationHandle, conversationGroupID, validationType, contractName, previousServiceMessageArgs.Message)
                 {
                     SequenceNumber = sequenceNumber,
                     ServiceName = serviceName,
-                    Body = originalMessageBody
+                    Body = deferedMessageBody
                 };
-                serviceMessageArgs = new ServiceMessageEventArgs(deferedServiceMessageArgs, originalMessage);
+
+                serviceMessageArgs = new ServiceMessageEventArgs(previousServiceMessageArgs, deferedMessage);
             }
             catch (OperationCanceledException)
             {
-                serviceMessageArgs.TaskCompletionSource.TrySetCanceled(serviceMessageArgs.Token);
+                tcs.TrySetCanceled(serviceMessageArgs.Token);
                 return serviceMessageArgs;
             }
             catch (PPSException ex)
             {
-                serviceMessageArgs.TaskCompletionSource.TrySetException(ex);
+                tcs.TrySetException(ex);
                 return serviceMessageArgs;
             }
             catch (Exception ex)
             {
                 this.Logger.LogError(ErrorHelper.GetFullMessage(ex));
-                serviceMessageArgs.TaskCompletionSource.TrySetException(new PPSException(ex));
+                tcs.TrySetException(new PPSException(ex));
                 return serviceMessageArgs;
             }
 
@@ -74,21 +76,21 @@ namespace TaskBroker.SSSB.MessageHandlers
                 serviceMessageArgs.Token.ThrowIfCancellationRequested();
                 var task = await taskManager.GetTaskInfo(messageAtributes.TaskID.Value);
                 serviceMessageArgs.TaskID = messageAtributes.TaskID.Value;
-                var executorArgs = new ExecutorArgs(taskManager, task, originalMessage, messageAtributes);
+                var executorArgs = new ExecutorArgs(taskManager, task, deferedMessage, messageAtributes);
                 await ExecuteTask(executorArgs, serviceMessageArgs);
             }
             catch (OperationCanceledException)
             {
-                serviceMessageArgs.TaskCompletionSource.TrySetCanceled(serviceMessageArgs.Token);
+                tcs.TrySetCanceled(serviceMessageArgs.Token);
             }
             catch (PPSException ex)
             {
-                serviceMessageArgs.TaskCompletionSource.TrySetException(ex);
+                tcs.TrySetException(ex);
             }
             catch (Exception ex)
             {
                 Logger.LogCritical(ErrorHelper.GetFullMessage(ex));
-                serviceMessageArgs.TaskCompletionSource.TrySetException(new PPSException(ex));
+                tcs.TrySetException(new PPSException(ex));
             }
 
             return serviceMessageArgs;

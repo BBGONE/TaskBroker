@@ -11,11 +11,11 @@ namespace TaskBroker.SSSB.Core
         private readonly ISSSBService _service;
         private readonly SSSBMessage _message;
         private readonly CancellationToken _token;
-        private int _taskID;
         private readonly Task<HandleMessageResult> _completion;
         private readonly TaskCompletionSource<HandleMessageResult> _tcs;
         private readonly IServiceScope _serviceScope;
         private readonly IServiceProvider _services;
+        private int _taskID;
 
         public ServiceMessageEventArgs(SSSBMessage message, ISSSBService svc, CancellationToken cancellation, IServiceScope serviceScope)
         {
@@ -29,37 +29,16 @@ namespace TaskBroker.SSSB.Core
             _services = _serviceScope.ServiceProvider;
         }
 
-        public ServiceMessageEventArgs(ServiceMessageEventArgs args, SSSBMessage newMessage)
+        public ServiceMessageEventArgs(ServiceMessageEventArgs parentArgs, SSSBMessage message)
         {
-            _message = newMessage;
-            _service = args._service;
-            _token = args._token;
-            _taskID = args._taskID;
-            _serviceScope = args._serviceScope;
-            _tcs = args._tcs;
-            _completion = args._completion;
-            _services = args._services;
-        }
-
-        public TaskCompletionSource<HandleMessageResult> TaskCompletionSource
-        {
-            get
-            {
-                return _tcs;
-            }
-        }
-
-        public SSSBMessage Message
-        {
-            get { return _message; }
-        }
-
-        public ISSSBService SSSBService
-        {
-            get
-            {
-                return this._service;
-            }
+            _message = message ?? parentArgs.Message;
+            _service = parentArgs._service;
+            _token = parentArgs._token;
+            _taskID = parentArgs._taskID;
+            _serviceScope = parentArgs._serviceScope;
+            _tcs = parentArgs._tcs;
+            _completion = parentArgs._completion;
+            _services = parentArgs._services;
         }
 
         public int TaskID
@@ -74,30 +53,23 @@ namespace TaskBroker.SSSB.Core
             }
         }
 
-        public CancellationToken Token
-        {
-            get
-            {
-                return _token;
-            }
-        }
-
-        public Task<HandleMessageResult> Completion
-        {
-            get { return _completion; }
-        }
-
-        public IServiceProvider Services
-        {
-            get
-            {
-               return _services;
-            }
-        }
+        public TaskCompletionSource<HandleMessageResult> TaskCompletionSource => _tcs;
+    
+        public SSSBMessage Message => _message;
+    
+        public ISSSBService SSSBService => _service;
+     
+        public CancellationToken Token => _token;
+      
+        public Task<HandleMessageResult> Completion => _completion;
+       
+        public IServiceProvider Services => _services;
+        
+        public IServiceScope ServiceScope => _serviceScope;
 
         public void Dispose()
         {
-            _serviceScope.Dispose();
+            ServiceScope.Dispose();
         }
     }
 }
