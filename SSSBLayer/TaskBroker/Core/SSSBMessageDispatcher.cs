@@ -125,9 +125,9 @@ namespace TaskBroker.SSSB.Core
         {
             bool rollBack = false;
 
-            var handler = _GetMessageHandler(dbconnection, message, token);
             try
             {
+                var handler = _GetMessageHandler(dbconnection, message, token);
                 await handler();
             }
             catch(Exception ex)

@@ -38,28 +38,15 @@ namespace TaskBroker.SSSB.MessageHandlers
             var previousServiceArgs = serviceArgs;
             bool isSync = true;
             Task processTask = Task.FromException(new Exception($"The message: {serviceArgs.Message.MessageType} ConversationHandle: {serviceArgs.Message.ConversationHandle} is not handled"));
-            try
+            // handle message in its own transaction
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
             {
-                // handle message in its own transaction
-                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
-                {
-                    serviceArgs = await messageHandler.HandleMessage(this.SSSBService, previousServiceArgs);
-                    transactionScope.Complete();
-                }
+                serviceArgs = await messageHandler.HandleMessage(this.SSSBService, previousServiceArgs);
+                transactionScope.Complete();
+            }
 
-                isSync = serviceArgs.Completion.IsCompleted;
-            }
-            catch (Exception handleEx)
-            {
-                if (!serviceArgs.TaskCompletionSource.TrySetException(handleEx))
-                {
-                    _logger.LogError(ErrorHelper.GetFullMessage(handleEx));
-                }
-            }
-            finally
-            {
-                processTask = this._HandleProcessingResult(dbconnection, serviceArgs, isSync);
-            }
+            isSync = serviceArgs.Completion.IsCompleted;
+            processTask = this._HandleProcessingResult(dbconnection, serviceArgs, isSync);
 
             if (isSync)
             {
