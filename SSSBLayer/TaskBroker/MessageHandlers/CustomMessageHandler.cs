@@ -20,8 +20,8 @@ namespace TaskBroker.SSSB.MessageHandlers
 
         public CustomMessageHandler(ISSSBService sssbService, IConnectionManager connectionManager, IStandardMessageHandlers standardMessageHandlers, ILogger<CustomMessageHandler> logger)
         {
-            this._connectionManager = connectionManager;
-            this.SSSBService = sssbService;
+            _connectionManager = connectionManager;
+            SSSBService = sssbService;
             _standardMessageHandlers = standardMessageHandlers;
             _logger = logger;
         }
@@ -67,20 +67,68 @@ namespace TaskBroker.SSSB.MessageHandlers
             }
         }
 
-        private async Task _HandleAsyncProcessingResult(SSSBMessage message, CancellationToken token, Task<HandleMessageResult> completionTask)
+        private Task _HandleProcessingResult(SqlConnection dbconnection, ServiceMessageEventArgs serviceArgs, bool isSync)
+        {
+            SSSBMessage message = serviceArgs.Message;
+            CancellationToken token = serviceArgs.Token;
+
+            Task processTask = serviceArgs.Completion.ContinueWith(async (antecedent) =>
+            {
+                try
+                {
+                    if (isSync)
+                    {
+                        await this.HandleSyncProcessingResult(dbconnection, message, token, antecedent);
+                    }
+                    else
+                    {
+                        await this.HandleAsyncProcessingResult(message, token, antecedent);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // NOOP
+                }
+                catch (PPSException)
+                {
+                    // Already Logged
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                }
+            }, isSync ? TaskContinuationOptions.ExecuteSynchronously : TaskContinuationOptions.None).Unwrap();
+
+            var disposeTask = processTask.ContinueWith((antecedent) =>
+            {
+                try
+                {
+                    this.OnDispose(serviceArgs);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                }
+            }, TaskContinuationOptions.ExecuteSynchronously);
+
+            return processTask;
+        }
+
+        #region virtual methods
+        protected virtual async Task HandleAsyncProcessingResult(SSSBMessage message, CancellationToken token, Task<HandleMessageResult> completionTask)
         {
             token.ThrowIfCancellationRequested();
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.RequiresNew, TransactionScopeAsyncFlowOption.Enabled))
             using (var dbconnection = await _connectionManager.CreateSSSBConnectionAsync(token))
             {
-                await _HandleSyncProcessingResult(dbconnection, message, token, completionTask);
+                await HandleSyncProcessingResult(dbconnection, message, token, completionTask);
 
                 transactionScope.Complete();
             }
         }
 
-        private async Task _HandleSyncProcessingResult(SqlConnection dbconnection, SSSBMessage message, CancellationToken token, Task<HandleMessageResult> completionTask)
+        protected virtual async Task HandleSyncProcessingResult(SqlConnection dbconnection, SSSBMessage message, CancellationToken token, Task<HandleMessageResult> completionTask)
         {
             HandleMessageResult handleMessageResult = null;
             try
@@ -110,51 +158,10 @@ namespace TaskBroker.SSSB.MessageHandlers
             }
         }
 
-        private Task _HandleProcessingResult(SqlConnection dbconnection, ServiceMessageEventArgs serviceArgs, bool isSync)
+        protected virtual void OnDispose(ServiceMessageEventArgs serviceArgs)
         {
-            SSSBMessage message = serviceArgs.Message;
-            CancellationToken token = serviceArgs.Token;
-
-            Task processTask = serviceArgs.Completion.ContinueWith(async (antecedent) =>
-            {
-                try
-                {
-                    if (isSync)
-                    {
-                        await this._HandleSyncProcessingResult(dbconnection, message, token, antecedent);
-                    }
-                    else
-                    {
-                        await this._HandleAsyncProcessingResult(message, token, antecedent);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    // NOOP
-                }
-                catch (PPSException)
-                {
-                    // Already Logged
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ErrorHelper.GetFullMessage(ex));
-                }
-            }, isSync ? TaskContinuationOptions.ExecuteSynchronously : TaskContinuationOptions.None).Unwrap();
-
-            var disposeTask = processTask.ContinueWith((antecedent) =>
-            {
-                try
-                {
-                    serviceArgs.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ErrorHelper.GetFullMessage(ex));
-                }
-            }, TaskContinuationOptions.ExecuteSynchronously);
-
-            return processTask;
+            serviceArgs.Dispose();
         }
+        #endregion
     }
 }

@@ -2,13 +2,9 @@ using System;
 
 namespace Shared.Errors
 {
-	public sealed class ErrorHelper
+	public static class ErrorHelper
 	{
-		private ErrorHelper()
-		{
-		}
-
-		public static string GetFullMessage(Exception exception, bool includeStackTrace)
+		public static string GetFullMessage(this Exception exception, bool includeStackTrace)
 		{
 			string result = exception.GetType().Name + ": " + exception.Message;
 			while (exception.InnerException != null)
@@ -31,7 +27,7 @@ namespace Shared.Errors
 			return result;
 		}
 
-        public static string GetFullMessage(Exception exception)
+        public static string GetFullMessage(this Exception exception)
         {
             return GetFullMessage(exception, true);
         }

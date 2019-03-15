@@ -97,8 +97,8 @@ namespace TaskBroker.SSSB.Core
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ErrorHelper.GetFullMessage(ex));
                         serviceArgs.TaskCompletionSource.TrySetException(ex);
+                        throw;
                     }
                 };
             }
@@ -126,7 +126,23 @@ namespace TaskBroker.SSSB.Core
             bool rollBack = false;
 
             var handler = _GetMessageHandler(dbconnection, message, token);
-            await handler();
+            try
+            {
+                await handler();
+            }
+            catch(Exception ex)
+            {
+                try
+                {
+                    _logger.LogError(ex.GetFullMessage());
+                    await _standardMessageHandlers.EndDialogMessageWithErrorHandler(dbconnection, message, ex.GetFullMessage(false), 1);
+                }
+                catch(Exception ex2)
+                {
+                    rollBack = true;
+                    _logger.LogError(ex2.GetFullMessage());
+                }
+            }
 
             return rollBack;
         }
