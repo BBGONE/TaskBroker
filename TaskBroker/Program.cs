@@ -19,7 +19,7 @@ namespace TaskBroker
         {
             var isService = !(Debugger.IsAttached || args.Contains("--console"));
 
-            var builder = new HostBuilder()
+            var builder = Host.CreateDefaultBuilder(args).UseWindowsService()
                 .ConfigureHostConfiguration(configHost =>
                 {
                     configHost.SetBasePath(Directory.GetCurrentDirectory());
@@ -73,22 +73,13 @@ namespace TaskBroker
                         context.Configuration.GetSection("FileLoggingOptions").Bind(opts);
                     });
                     */
-                    /*
-                    logBuilder.AddFile(opts =>
-                    {
-                    opts.FileName = "app-logs-";
-                    opts.FileSizeLimit = 4 * 1024 * 1024;
-                    opts.RetainedFileCountLimit = 10;
-                    opts.BatchSize = 64;
-                    opts.FlushPeriod = TimeSpan.FromSeconds(2);
-                    });
-                    */
-
                 });
+
+         
 
             if (isService)
             {
-                await builder.RunAsServiceAsync();
+                await builder.Build().RunAsync();
             }
             else
             {
