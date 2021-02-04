@@ -26,6 +26,7 @@ For example, i use it to write stored procedures for some Reports (in SQL Server
 of a task and waits for its completion. When the execution of the task is completed, the report is created based on the data obtained from the execution of that task.
 There are more possibilities (Application to Application communication), but for them, it is more convenient to use other Message Buses (like - NServiceBus, MassTransit or Rebus). 
 And this thing is better for SQL Server - Outside World communication (send emails, import data, etc).
+It can also be used as a relay to send mesages further to a different message broker like Kafka or Rabbit MQ.
 
 ### Why  other Message Buses rarely use Sql Server Service Broker (SSSB) Transport
 
